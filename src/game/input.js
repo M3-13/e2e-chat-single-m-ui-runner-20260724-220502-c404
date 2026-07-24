@@ -1,6 +1,6 @@
 export function setupInput(onJump) {
   const onKeyDown = (e) => {
-    if (e.code === 'Space' || e.code === 'ArrowUp') {
+    if (e.code === 'Space' || e.code === 'ArrowUp' || e.key === ' ' || e.key === 'ArrowUp') {
       e.preventDefault()
       onJump()
     }

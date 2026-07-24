@@ -1,5 +1,5 @@
-const GRAVITY = 1800
-const JUMP_VELOCITY = 620
+const GRAVITY = 1600
+const JUMP_VELOCITY = 850
 
 export function createKnight() {
   return {
