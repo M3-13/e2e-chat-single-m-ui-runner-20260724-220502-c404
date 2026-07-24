@@ -34,33 +34,36 @@ const state = {
   gameOver: false,
 }
 
+let _resizeRaf = null
+
 function resize() {
-  const w = window.innerWidth
-  const h = window.innerHeight
-  const dpr = window.devicePixelRatio || 1
+  if (_resizeRaf) return
+  _resizeRaf = requestAnimationFrame(() => {
+    _resizeRaf = null
+    const displayW = state.canvas.clientWidth
+    const displayH = state.canvas.clientHeight
+    const dpr = window.devicePixelRatio || 1
 
-  state.canvas.width = Math.round(w * dpr)
-  state.canvas.height = Math.round(h * dpr)
-  state.canvas.style.width = w + 'px'
-  state.canvas.style.height = h + 'px'
+    state.canvas.width = Math.round(displayW * dpr)
+    state.canvas.height = Math.round(displayH * dpr)
 
-  state.width = state.canvas.width
-  state.height = state.canvas.height
-  state.dpr = dpr
-  state.ctx.setTransform(1, 0, 0, 1, 0, 0)
+    state.width = state.canvas.width
+    state.height = state.canvas.height
+    state.dpr = dpr
 
-  const baseScreen = 1024
-  if (w < 480) {
-    state.scale = 2
-  } else if (w <= baseScreen) {
-    state.scale = 2
-  } else {
-    state.scale = 3
-  }
+    const baseScreen = 1024
+    if (displayW < 480) {
+      state.scale = 2
+    } else if (displayW <= baseScreen) {
+      state.scale = 2
+    } else {
+      state.scale = 3
+    }
 
-  state.knightX = Math.round(state.width * 0.2)
-  initBackground(state.dpr)
-  initObstacles(state.dpr)
+    state.knightX = Math.round(state.width * 0.2)
+    initBackground(state.dpr)
+    initObstacles(state.dpr)
+  })
 }
 
 function drawSky() {
@@ -246,6 +249,7 @@ export function start(canvas) {
     }
   })
   window.addEventListener('resize', resize)
+  window.addEventListener('orientationchange', resize)
 
   let lastTime = 0
   function loop(timestamp) {
