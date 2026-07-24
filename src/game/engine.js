@@ -4,6 +4,7 @@ import { setupInput } from './input.js'
 import { initBackground, drawBackground } from './background.js'
 import { initObstacles, createObstacleSystem, updateObstacles, drawObstacles } from './obstacles.js'
 import { checkCollision } from './collision.js'
+import { createScore, updateScore, resetScore, getScoreText, getScoreValue } from './score.js'
 
 const SKY_TOP = [58, 77, 112]
 const SKY_BOTTOM = [107, 127, 163]
@@ -29,6 +30,7 @@ const state = {
   running: false,
   knight: null,
   obstacles: null,
+  score: null,
   gameOver: false,
 }
 
@@ -129,8 +131,27 @@ function drawKnight() {
 
 const BASE_SIZE = 48
 
+function drawScore() {
+  const { ctx, width, height, score } = state
+  if (!score) return
+
+  const w = window.innerWidth
+  const fontSize = w < 480 ? 14 : 20
+  const padding = 16 * state.dpr
+  const text = 'DISTANZ: ' + getScoreText(score)
+
+  ctx.textAlign = 'left'
+  ctx.textBaseline = 'top'
+  ctx.lineWidth = 2
+  ctx.font = fontSize + 'px "Courier New", monospace'
+  ctx.strokeStyle = '#1b2436'
+  ctx.fillStyle = '#f4e9d0'
+  ctx.strokeText(text, padding, padding)
+  ctx.fillText(text, padding, padding)
+}
+
 function drawGameOver() {
-  const { ctx, width, height } = state
+  const { ctx, width, height, score } = state
   const cx = width / 2
   const cy = height / 2
 
@@ -147,10 +168,11 @@ function drawGameOver() {
   ctx.strokeText('GAME OVER', cx, cy - 60)
   ctx.fillText('GAME OVER', cx, cy - 60)
 
+  const distText = 'DISTANZ: ' + (score ? getScoreText(score) : '0000')
   ctx.font = '20px "Courier New", monospace'
   ctx.fillStyle = '#f4e9d0'
-  ctx.strokeText('DISTANZ: 0000', cx, cy)
-  ctx.fillText('DISTANZ: 0000', cx, cy)
+  ctx.strokeText(distText, cx, cy)
+  ctx.fillText(distText, cx, cy)
 
   ctx.font = '12px "Courier New", monospace'
   ctx.fillStyle = '#8a94a8'
@@ -166,6 +188,7 @@ function draw() {
   drawGround()
   drawObstacles(ctx, state.obstacles, state)
   drawKnight()
+  drawScore()
   if (state.gameOver) drawGameOver()
 }
 
@@ -186,6 +209,7 @@ function restartGame() {
   state.gameOver = false
   state.animTime = 0
   resetKnight(state.knight)
+  if (state.score) resetScore(state.score)
   state.obstacles.list = []
   state.obstacles.spawnTimer = 0
   state.obstacles.nextInterval = 1.5
@@ -195,6 +219,7 @@ function update(dt) {
   if (state.gameOver) return
   state.animTime += dt
   updateKnight(state.knight, dt, state.dpr)
+  if (state.score) updateScore(state.score, dt)
   if (state.obstacles) {
     updateObstacles(state.obstacles, dt, state.dpr, state.width)
   }
@@ -207,6 +232,7 @@ export function start(canvas) {
   knightFrames = getSpriteSheet()
   state.knight = createKnight()
   state.obstacles = createObstacleSystem()
+  state.score = createScore()
   resize()
   initBackground(state.dpr)
   initObstacles(state.dpr)
