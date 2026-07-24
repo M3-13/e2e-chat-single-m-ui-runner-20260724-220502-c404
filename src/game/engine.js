@@ -1,8 +1,9 @@
 import { getSpriteSheet } from './sprites.js'
-import { createKnight, jump, updateKnight } from './knight.js'
+import { createKnight, jump, updateKnight, resetKnight } from './knight.js'
 import { setupInput } from './input.js'
 import { initBackground, drawBackground } from './background.js'
 import { initObstacles, createObstacleSystem, updateObstacles, drawObstacles } from './obstacles.js'
+import { checkCollision } from './collision.js'
 
 const SKY_TOP = [58, 77, 112]
 const SKY_BOTTOM = [107, 127, 163]
@@ -28,6 +29,7 @@ const state = {
   running: false,
   knight: null,
   obstacles: null,
+  gameOver: false,
 }
 
 function resize() {
@@ -127,6 +129,35 @@ function drawKnight() {
 
 const BASE_SIZE = 48
 
+function drawGameOver() {
+  const { ctx, width, height } = state
+  const cx = width / 2
+  const cy = height / 2
+
+  ctx.fillStyle = 'rgba(43,58,85,0.78)'
+  ctx.fillRect(0, 0, width, height)
+
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.lineWidth = 2
+
+  ctx.font = '32px "Courier New", monospace'
+  ctx.fillStyle = '#e0a83d'
+  ctx.strokeStyle = '#1b2436'
+  ctx.strokeText('GAME OVER', cx, cy - 60)
+  ctx.fillText('GAME OVER', cx, cy - 60)
+
+  ctx.font = '20px "Courier New", monospace'
+  ctx.fillStyle = '#f4e9d0'
+  ctx.strokeText('DISTANZ: 0000', cx, cy)
+  ctx.fillText('DISTANZ: 0000', cx, cy)
+
+  ctx.font = '12px "Courier New", monospace'
+  ctx.fillStyle = '#8a94a8'
+  ctx.strokeText('LEERTASTE / KLICK f\u00fcr Neustart', cx, cy + 60)
+  ctx.fillText('LEERTASTE / KLICK f\u00fcr Neustart', cx, cy + 60)
+}
+
 function draw() {
   const { ctx, width, height, animTime } = state
   ctx.clearRect(0, 0, width, height)
@@ -135,14 +166,39 @@ function draw() {
   drawGround()
   drawObstacles(ctx, state.obstacles, state)
   drawKnight()
+  if (state.gameOver) drawGameOver()
+}
+
+function checkGameOver() {
+  if (!state.obstacles || !state.obstacles.list.length) return
+  const groundY = Math.round(state.height * GROUND_FRACTION)
+  const s = state.scale * (BASE_SIZE / 48)
+  const drawSize = 48 * s
+  const kx = state.knightX - drawSize / 2
+  const ky = groundY - drawSize + 4 * s + state.knight.y
+
+  if (checkCollision(kx, ky, drawSize, drawSize, state.obstacles.list, groundY, state.dpr)) {
+    state.gameOver = true
+  }
+}
+
+function restartGame() {
+  state.gameOver = false
+  state.animTime = 0
+  resetKnight(state.knight)
+  state.obstacles.list = []
+  state.obstacles.spawnTimer = 0
+  state.obstacles.nextInterval = 1.5
 }
 
 function update(dt) {
+  if (state.gameOver) return
   state.animTime += dt
   updateKnight(state.knight, dt, state.dpr)
   if (state.obstacles) {
     updateObstacles(state.obstacles, dt, state.dpr, state.width)
   }
+  checkGameOver()
 }
 
 export function start(canvas) {
@@ -156,7 +212,13 @@ export function start(canvas) {
   initObstacles(state.dpr)
   state.running = true
 
-  setupInput(() => jump(state.knight))
+  setupInput(() => {
+    if (state.gameOver) {
+      restartGame()
+    } else {
+      jump(state.knight)
+    }
+  })
   window.addEventListener('resize', resize)
 
   let lastTime = 0
@@ -171,6 +233,11 @@ export function start(canvas) {
   }
 
   requestAnimationFrame(loop)
+}
+
+export function getScene() {
+  if (!state.running) return null
+  return state.gameOver ? 'gameover' : 'running'
 }
 
 export function getPlayerPos() {

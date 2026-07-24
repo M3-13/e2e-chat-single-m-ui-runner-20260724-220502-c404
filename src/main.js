@@ -1,4 +1,4 @@
-import { start, getPlayerPos } from './game/engine.js'
+import { start, getPlayerPos, getScene } from './game/engine.js'
 
 const canvas = document.getElementById('game-canvas')
 start(canvas)
@@ -22,6 +22,7 @@ function updateTestApi() {
   const pos = getPlayerPos()
   TEST_API.player.x = pos.x
   TEST_API.player.y = pos.y
+  TEST_API.scene = getScene()
   requestAnimationFrame(updateTestApi)
 }
 
