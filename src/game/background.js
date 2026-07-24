@@ -9,7 +9,7 @@ let _tiles = null
 let _lastDpr = 0
 
 function farHeight(nx) {
-  const hill = 0.35 + Math.sin(nx * Math.PI * 3 + 0.2) * 0.12
+  const hill = 0.35 + Math.sin(nx * 2 * Math.PI * 2 + 0.2) * 0.12
   const castleKeep = (nx > 0.32 && nx < 0.48) ? 0.3 : 0
   const tower1 = (nx > 0.25 && nx < 0.32) ? 0.15 : 0
   const tower2 = (nx > 0.48 && nx < 0.55) ? 0.15 : 0
@@ -18,7 +18,7 @@ function farHeight(nx) {
 }
 
 function nearHeight(nx) {
-  const hill = 0.4 + Math.sin(nx * Math.PI * 2 + 1) * 0.15 + Math.sin(nx * Math.PI * 5 + 3) * 0.05
+  const hill = 0.4 + Math.sin(nx * 2 * Math.PI * 1 + 1) * 0.15 + Math.sin(nx * 2 * Math.PI * 2 + 3) * 0.05
   let trees = 0
   const treePositions = [0.08, 0.28, 0.52, 0.72, 0.92]
   for (const tp of treePositions) {
@@ -30,12 +30,13 @@ function nearHeight(nx) {
   return Math.min(hill + trees, 0.85)
 }
 
-function buildTile(w, h, heightFunc) {
+function buildTile(w, h, heightFunc, color) {
   const src = document.createElement('canvas')
   src.width = w
   src.height = h
   const sctx = src.getContext('2d')
 
+  sctx.fillStyle = color
   sctx.beginPath()
   sctx.moveTo(0, h)
   for (let x = 0; x <= w; x++) {
@@ -55,8 +56,8 @@ function buildTiles(dpr) {
   const h = TILE_H
   const scale = Math.round(dpr * 4)
 
-  const farSrc = buildTile(w, h, farHeight)
-  const nearSrc = buildTile(w, h, nearHeight)
+  const farSrc = buildTile(w, h, farHeight, FAR_COLOR)
+  const nearSrc = buildTile(w, h, nearHeight, NEAR_COLOR)
 
   const farDst = document.createElement('canvas')
   farDst.width = w * scale
