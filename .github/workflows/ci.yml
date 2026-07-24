@@ -1,0 +1,42 @@
+# office-crew-ci-gates: strict
+# Auto-generated for Vite-based projects v2 (GitHub Actions).
+# npm ci + build + test + (optional) lint/tsc.
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+      - run: npm run build
+      - shell: bash
+        run: |
+          if grep -q '"test"' package.json; then
+            npm test -- --run
+          else
+            echo "No test script in package.json — skip"
+          fi
+  lint:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+      - shell: bash
+        run: |
+          if [ -f .eslintrc.json ] || [ -f .eslintrc.cjs ] || [ -f eslint.config.js ] || [ -f eslint.config.mjs ]; then
+            npx eslint . --max-warnings=0
+          fi
+          if [ -f tsconfig.json ]; then
+            npx tsc --noEmit
+          fi

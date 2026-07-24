@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+build/
+dist/
+*.egg-info/
+*.egg
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environments / IDE
+.env
+.venv
+venv/
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Node / Vite / Webpack
+node_modules/
+.vite/
+.parcel-cache/
+*.local
+
+# Compiled artifacts (Go / Rust / Java / .NET / C) + tester harness
+target/
+bin/
+obj/
+*.class
+*.exe
+*.o
+.tester_venv/
+.tester_build/
+.tester_app
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
