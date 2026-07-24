@@ -1,12 +1,12 @@
 import { getSpriteSheet } from './sprites.js'
+import { createKnight, jump, updateKnight } from './knight.js'
+import { setupInput } from './input.js'
 
 const SKY_TOP = [58, 77, 112]
 const SKY_BOTTOM = [107, 127, 163]
 const GROUND_LINE = '#7a5c3a'
 const GROUND_DARK = '#5a4228'
 const GRASS = '#5a6e4a'
-const GROUND_LINE_RGB = [122, 92, 58]
-const GROUND_DARK_RGB = [90, 66, 40]
 
 const GROUND_FRACTION = 0.8
 
@@ -22,9 +22,9 @@ const state = {
   dpr: 1,
   animTime: 0,
   knightX: 0,
-  knightY: 0,
   scale: 1,
   running: false,
+  knight: null,
 }
 
 function resize() {
@@ -98,16 +98,16 @@ function drawGround() {
 function drawKnight() {
   if (!knightFrames) return
 
-  const { ctx, animTime, knightX, scale } = state
+  const { ctx, animTime, knightX, scale, knight } = state
   const groundY = Math.round(state.height * GROUND_FRACTION)
 
   const frameIdx = Math.floor(animTime / FRAME_DURATION) % 4
-  const frame = knightFrames[frameIdx]
+  const frame = knightFrames[knight.grounded ? frameIdx : 4]
 
   const s = scale * (BASE_SIZE / 48)
   const drawSize = 48 * s
   const x = knightX - drawSize / 2
-  const y = groundY - drawSize + 4 * s
+  const y = groundY - drawSize + 4 * s + knight.y
 
   ctx.imageSmoothingEnabled = false
   ctx.drawImage(frame, x, y, drawSize, drawSize)
@@ -132,15 +132,18 @@ function draw() {
 
 function update(dt) {
   state.animTime += dt
+  updateKnight(state.knight, dt, state.dpr)
 }
 
 export function start(canvas) {
   state.canvas = canvas
   state.ctx = canvas.getContext('2d')
   knightFrames = getSpriteSheet()
+  state.knight = createKnight()
   resize()
   state.running = true
 
+  setupInput(() => jump(state.knight))
   window.addEventListener('resize', resize)
 
   let lastTime = 0
@@ -151,12 +154,6 @@ export function start(canvas) {
 
     update(dt)
     draw()
-
-    const groundY = Math.round(state.height * GROUND_FRACTION)
-    const s = state.scale * (BASE_SIZE / 48)
-    const drawSize = 48 * s
-    const playerY = groundY - drawSize + 4 * s
-
     requestAnimationFrame(loop)
   }
 
@@ -169,6 +166,6 @@ export function getPlayerPos() {
   const drawSize = 48 * s
   return {
     x: state.knightX,
-    y: groundY - drawSize + 4 * s,
+    y: groundY - drawSize + 4 * s + (state.knight ? state.knight.y : 0),
   }
 }

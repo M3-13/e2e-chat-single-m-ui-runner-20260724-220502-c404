@@ -14,6 +14,10 @@ Object.defineProperty(window, '__TEST_API__', {
   configurable: false,
 })
 
+const initPos = getPlayerPos()
+TEST_API.player.x = initPos.x
+TEST_API.player.y = initPos.y
+
 function updateTestApi() {
   const pos = getPlayerPos()
   TEST_API.player.x = pos.x
