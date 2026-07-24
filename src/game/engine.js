@@ -2,6 +2,7 @@ import { getSpriteSheet } from './sprites.js'
 import { createKnight, jump, updateKnight } from './knight.js'
 import { setupInput } from './input.js'
 import { initBackground, drawBackground } from './background.js'
+import { initObstacles, createObstacleSystem, updateObstacles, drawObstacles } from './obstacles.js'
 
 const SKY_TOP = [58, 77, 112]
 const SKY_BOTTOM = [107, 127, 163]
@@ -26,6 +27,7 @@ const state = {
   scale: 1,
   running: false,
   knight: null,
+  obstacles: null,
 }
 
 function resize() {
@@ -54,6 +56,7 @@ function resize() {
 
   state.knightX = Math.round(state.width * 0.2)
   initBackground(state.dpr)
+  initObstacles(state.dpr)
 }
 
 function drawSky() {
@@ -130,12 +133,16 @@ function draw() {
   drawSky()
   drawBackground(ctx, state, animTime)
   drawGround()
+  drawObstacles(ctx, state.obstacles, state)
   drawKnight()
 }
 
 function update(dt) {
   state.animTime += dt
   updateKnight(state.knight, dt, state.dpr)
+  if (state.obstacles) {
+    updateObstacles(state.obstacles, dt, state.dpr, state.width)
+  }
 }
 
 export function start(canvas) {
@@ -143,8 +150,10 @@ export function start(canvas) {
   state.ctx = canvas.getContext('2d')
   knightFrames = getSpriteSheet()
   state.knight = createKnight()
+  state.obstacles = createObstacleSystem()
   resize()
   initBackground(state.dpr)
+  initObstacles(state.dpr)
   state.running = true
 
   setupInput(() => jump(state.knight))
