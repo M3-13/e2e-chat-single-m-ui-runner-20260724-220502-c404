@@ -1,6 +1,7 @@
 import { getSpriteSheet } from './sprites.js'
 import { createKnight, jump, updateKnight } from './knight.js'
 import { setupInput } from './input.js'
+import { initBackground, drawBackground } from './background.js'
 
 const SKY_TOP = [58, 77, 112]
 const SKY_BOTTOM = [107, 127, 163]
@@ -52,6 +53,7 @@ function resize() {
   }
 
   state.knightX = Math.round(state.width * 0.2)
+  initBackground(state.dpr)
 }
 
 function drawSky() {
@@ -123,9 +125,10 @@ function drawKnight() {
 const BASE_SIZE = 48
 
 function draw() {
-  const { ctx, width, height } = state
+  const { ctx, width, height, animTime } = state
   ctx.clearRect(0, 0, width, height)
   drawSky()
+  drawBackground(ctx, state, animTime)
   drawGround()
   drawKnight()
 }
@@ -141,6 +144,7 @@ export function start(canvas) {
   knightFrames = getSpriteSheet()
   state.knight = createKnight()
   resize()
+  initBackground(state.dpr)
   state.running = true
 
   setupInput(() => jump(state.knight))
